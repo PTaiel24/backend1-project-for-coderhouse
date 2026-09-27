@@ -1,0 +1,24 @@
+{
+  "name": "backend1-project-for-coderhouse",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [
+    "node"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PTaiel24/backend1-project-for-coderhouse.git"
+  },
+  "license": "ISC",
+  "author": "Taiel Pernarcig",
+  "type": "module",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.3"
+  }
+}

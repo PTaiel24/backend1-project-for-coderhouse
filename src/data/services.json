@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "name": "Corte de Cabello Clásico",
+    "description": "Corte personalizado con lavado y peinado incluido.",
+    "duration": 45,
+    "price": 8500,
+    "category": "Barbería",
+    "available": true
+  },
+  {
+    "id": 2,
+    "name": "Arreglo y Perfilado de Barba",
+    "description": "Recorte, perfilado con navaja tradicional y tratamiento con aceites hidratantes.",
+    "duration": 30,
+    "price": 5000,
+    "category": "Barbería",
+    "available": true
+  },
+  {
+    "id": 3,
+    "name": "Masaje Descontracturante",
+    "description": "Sesión terapéutica para aliviar tensiones musculares en espalda, hombros y cuello.",
+    "duration": 60,
+    "price": 18000,
+    "category": "Spa y Masajes",
+    "available": true
+  },
+  {
+    "id": 4,
+    "name": "Limpieza Facial Profunda",
+    "description": "Higiene facial con exfoliación, vapor de ozono, extracción y máscara descongestiva.",
+    "duration": 50,
+    "price": 14000,
+    "category": "Estética",
+    "available": false
+  },
+  {
+    "id": 5,
+    "name": "Manicura Rusa con Esmaltado Semipermanente",
+    "description": "Tratamiento de cutículas en seco, limado y esmaltado de alta duración.",
+    "duration": 60,
+    "price": 11000,
+    "category": "Manicuría",
+    "available": true
+  }
+]
