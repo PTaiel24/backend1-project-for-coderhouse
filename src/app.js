@@ -1,8 +1,24 @@
-import config from "./config/env.config.js";
-import { ServiceManager } from "./managers/ServiceManager.js";
+import express from "express";
+import serviceRouter from "./routes/services.router.js";
 
-const serviceManager = new ServiceManager();
+const app = express();
 
-console.log("Aplicacion iniciada correctamente");
-console.log(`Puerto: ${config.port}`);
-console.log(`Entorno: ${config.node_env}`);
+app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "Bienvenido a backend 1",
+  });
+});
+
+app.use("/api/services", serviceRouter);
+
+app.use((req, res) => {
+  res.status(404).json({
+    status: "error",
+    message: "La ruta solicitada no existe",
+  });
+});
+
+export default app;
