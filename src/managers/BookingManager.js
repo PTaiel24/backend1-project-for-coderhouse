@@ -17,7 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DEFAULT_PATH = path.resolve(__dirname, "../data/bookings.json");
 
-export class BookingManager {
+class BookingManager {
   constructor(filePath = DEFAULT_PATH) {
     this.path = filePath;
   }
@@ -130,3 +130,5 @@ export class BookingManager {
     }
   }
 }
+
+export default BookingManager;

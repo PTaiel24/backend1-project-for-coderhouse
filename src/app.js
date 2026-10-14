@@ -1,6 +1,6 @@
 import express from "express";
 import serviceRouter from "./routes/services.router.js";
-import bookingRouter from "./routes/bookings.routes.js";
+import bookingRouter from "./routes/bookings.router.js";
 
 const app = express();
 
@@ -19,7 +19,7 @@ app.use("/api/bookings", bookingRouter);
 app.use((req, res) => {
   res.status(404).json({
     status: "error",
-    message: "La ruta solicitada no exist4e",
+    message: "La ruta solicitada no existe",
   });
 });
 
