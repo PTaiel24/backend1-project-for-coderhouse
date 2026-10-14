@@ -12,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DEFAULT_PATH = path.resolve(__dirname, "../data/services.json");
 
-export class ServiceManager {
+class ServiceManager {
   constructor(filePath = DEFAULT_PATH) {
     this.path = filePath;
   }
@@ -62,25 +62,36 @@ export class ServiceManager {
   async addService(serviceData) {
     const { name, description, duration, price, category, available } =
       serviceData;
+
+    const errors = [];
+
+    if (typeof name !== "string" || name.trim() === "") {
+      errors.push("Name debe de ser un string no vacio");
+    }
+    if (typeof description !== "string" || description.trim() === "") {
+      errors.push("Description debe de ser un string no vacio");
+    }
+    if (typeof category !== "string" || category.trim() === "") {
+      errors.push("Category debe de ser un string no vacio");
+    }
+    if (typeof price !== "number" || !Number.isFinite(price) || price < 0) {
+      errors.push("Price debe ser un número finito mayor o igual a cero");
+    }
     if (
-      !name ||
-      !description ||
-      duration === undefined ||
-      price === undefined ||
-      !category ||
-      available === undefined
+      typeof duration !== "number" ||
+      !Number.isFinite(duration) ||
+      duration <= 0
     ) {
-      throw createError(
-        `Todos los campos deben completarse correctamente`,
-        400,
-      );
+      errors.push("Duration debe ser un número finito mayor a cero");
     }
-    if (available !== true && available !== false) {
-      throw createError(
-        "Available debe de ser 'true' o 'false' de forma Booleana",
-        400,
-      );
+    if (typeof available !== "boolean") {
+      errors.push("Available debe ser un booleano (true o false)");
     }
+
+    if (errors.length > 0) {
+      throw createError(errors.join(" - "), 400);
+    }
+
     const services = await this.getServices();
 
     /* Genera un id con dos casos, si queda un hueco agarra el id de ese hueco,
@@ -97,11 +108,11 @@ export class ServiceManager {
 
     const newService = {
       id: newId,
-      name: String(name),
-      description: String(description),
-      duration: Number(duration),
-      price: Number(price),
-      category: String(category),
+      name: name,
+      description: description,
+      duration: duration,
+      price: price,
+      category: category,
       available: available,
     };
 
@@ -143,3 +154,5 @@ export class ServiceManager {
     return deletedService;
   }
 }
+
+export default ServiceManager;
