@@ -1,30 +1,17 @@
 # API REST de Servicios y Reservas
 
-Proyecto desarrollado para el módulo **Backend 1 de CoderHouse**, correspondiente a la entrega **Organización de la API con Routers y Controllers**.
+Proyecto del módulo **Backend 1 de Coderhouse**. La API administra servicios y reservas para un sistema de turnos mediante Node.js, Express y archivos JSON.
 
-La aplicación implementa una API REST para administrar servicios y reservas de un sistema de turnos. En esta etapa se reorganizó el código para separar las responsabilidades entre routers, controllers y managers, manteniendo los endpoints y el comportamiento externo de las entregas anteriores.
+Esta etapa reorganiza la API para separar las responsabilidades en capas: **Router → Controller → Service → Repository → DAO → archivo JSON**. El objetivo es conservar las URLs públicas de la API y preparar el proyecto para una futura migración de persistencia a MongoDB Atlas con Mongoose.
 
-La persistencia de los datos se realiza mediante archivos JSON utilizando FileSystem.
+## Tecnologías
 
-## Objetivos
-
-- Organizar el código en capas con responsabilidades diferenciadas.
-- Mantener las rutas existentes de servicios y reservas.
-- Separar el manejo de las solicitudes HTTP de la lógica de datos.
-- Gestionar los recursos mediante managers.
-- Conservar los datos en archivos JSON.
-- Facilitar el mantenimiento y la futura evolución de la API.
-
-## Tecnologías utilizadas
-
-- Node.js
-- Express
-- JavaScript con ES Modules (ESM)
-- dotenv
-- FileSystem (`fs/promises`)
-- JSON
-- Postman para pruebas manuales
-- Git y GitHub para el control de versiones
+- Node.js y JavaScript con ES Modules (ESM).
+- Express para exponer los endpoints HTTP.
+- dotenv para cargar variables de entorno.
+- `node:fs/promises` para leer y escribir los archivos JSON.
+- JSON como persistencia de esta entrega.
+- Postman para pruebas manuales.
 
 ## Estructura del proyecto
 
@@ -43,9 +30,15 @@ backend1-project-for-coderhouse/
     ├── controllers/
     │   ├── services.controller.js
     │   └── bookings.controller.js
-    ├── managers/
-    │   ├── ServiceManager.js
-    │   └── BookingManager.js
+    ├── services/
+    │   ├── services.service.js
+    │   └── bookings.service.js
+    ├── repositories/
+    │   ├── services.repository.js
+    │   └── bookings.repository.js
+    ├── dao/
+    │   ├── services.dao.js
+    │   └── bookings.dao.js
     ├── routes/
     │   ├── services.router.js
     │   └── bookings.router.js
@@ -53,101 +46,77 @@ backend1-project-for-coderhouse/
     │   ├── services.json
     │   └── bookings.json
     └── utils/
+        ├── createError.js
         └── sendError.js
 ```
 
-## Arquitectura y responsabilidades
+## Arquitectura en capas
 
-La API se organiza en tres capas principales:
+### Router
 
-### Routers
+Define los endpoints y dirige cada solicitud al método correspondiente del controller. Las rutas de servicios se encuentran en `src/routes/services.router.js` y las de reservas en `src/routes/bookings.router.js`.
 
-Los routers definen los endpoints y conectan cada ruta con el método correspondiente del controller.
+### Controller
 
-- `services.router.js`: registra las rutas de servicios.
-- `bookings.router.js`: registra las rutas de reservas.
+Recibe la solicitud HTTP, extrae parámetros, query parameters y datos del body; llama al Service y devuelve una respuesta con el estado HTTP y un objeto JSON. Los controllers son `services.controller.js` y `bookings.controller.js`.
 
-Los routers no contienen lógica de negocio ni acceden directamente a los archivos JSON.
+### Service
 
-### Controllers
+Contiene las validaciones y reglas de negocio. No debe acceder directamente a archivos JSON ni depender de `req` o `res`.
 
-Los controllers reciben las solicitudes HTTP, obtienen los parámetros, query parameters o datos del body, llaman a los managers y devuelven respuestas mediante `res.status().json()`.
+- `services.service.js`: expone `getServices`, `getServiceById`, `createService`, `updateService` y `deleteService`.
+- `bookings.service.js`: expone `createBooking`, `getBookingById` y `addServiceToBooking`.
 
-- `services.controller.js`: gestiona las solicitudes relacionadas con servicios.
-- `bookings.controller.js`: gestiona las solicitudes relacionadas con reservas y valida la existencia de los servicios al asociarlos a una reserva.
+En las reservas, la regla para agregar servicios se gestiona desde `bookings.service.js`: cuando un servicio ya está incluido en una reserva, se incrementa `quantity`; de lo contrario, se agrega una entrada con `quantity: 1`.
 
-### Managers
+### Repository
 
-Los managers concentran la lógica de datos y las operaciones de persistencia. No utilizan `req` ni `res`.
+Ofrece métodos de acceso a los datos de cada recurso y mantiene al Service desacoplado de los detalles del almacenamiento.
 
-- `ServiceManager.js`: consulta, crea, actualiza y elimina servicios.
-- `BookingManager.js`: crea y consulta reservas, y permite asociar servicios a ellas.
+- `services.repository.js`: `getAll`, `getById`, `create`, `update` y `delete`.
+- `bookings.repository.js`: `create`, `getById` y `update`.
 
-### Archivos de datos
+### DAO
 
-- `src/data/services.json`: almacena los servicios.
-- `src/data/bookings.json`: almacena las reservas.
+Es la capa que lee y escribe directamente los archivos JSON mediante `fs/promises`.
 
-### Manejo de errores
+- `services.dao.js`: trabaja con `src/data/services.json`.
+- `bookings.dao.js`: trabaja con `src/data/bookings.json`.
 
-`src/utils/sendError.js` centraliza el formato de las respuestas de error enviadas por los controllers.
+El DAO no debería contener reglas de negocio como decidir cómo se acumulan los servicios de una reserva; esa regla corresponde al Service.
 
-## Flujo de una solicitud
+### Configuración y persistencia
 
-```text
-Cliente / Postman
-       |
-       v
-     Router
-       |
-       v
-    Controller
-       |
-       v
-     Manager
-       |
-       v
-  Archivo JSON
-```
+- `src/config/env.config.js` carga y valida variables de entorno.
+- `src/app.js` configura Express y registra los routers.
+- `src/server.js` inicia el servidor.
+- `src/data/services.json` y `src/data/bookings.json` contienen los datos persistidos en esta etapa.
+- `src/utils/createError.js` crea errores con un `statusCode`.
+- `src/utils/sendError.js` forma las respuestas de error utilizadas por los controllers.
 
-El resultado de la operación vuelve al controller, que responde al cliente con el estado HTTP y el contenido JSON correspondiente.
+## Endpoints
 
-## Recurso: Services
+Las URLs de la API se mantienen sin cambios.
 
-Cada servicio contiene los siguientes campos:
+### Servicios (`/api/services`)
 
-| Campo         | Descripción                             |
-| ------------- | --------------------------------------- |
-| `id`          | Identificador generado por el servidor. |
-| `name`        | Nombre del servicio.                    |
-| `description` | Descripción del servicio.               |
-| `duration`    | Duración del servicio.                  |
-| `price`       | Precio del servicio.                    |
-| `category`    | Categoría del servicio.                 |
-| `available`   | Indica si el servicio está disponible.  |
+| Método   | Endpoint             | Descripción                                     |
+| -------- | -------------------- | ----------------------------------------------- |
+| `GET`    | `/api/services`      | Obtiene todos los servicios.                    |
+| `GET`    | `/api/services/:sid` | Busca un servicio por su ID.                    |
+| `POST`   | `/api/services`      | Crea un servicio y genera su ID en el servidor. |
+| `PUT`    | `/api/services/:sid` | Actualiza un servicio existente.                |
+| `DELETE` | `/api/services/:sid` | Elimina un servicio.                            |
 
-### Endpoints de servicios
-
-| Método | Endpoint             | Descripción                      |
-| ------ | -------------------- | -------------------------------- |
-| GET    | `/api/services`      | Obtiene todos los servicios.     |
-| GET    | `/api/services/:sid` | Obtiene un servicio por ID.      |
-| POST   | `/api/services`      | Crea un servicio.                |
-| PUT    | `/api/services/:sid` | Actualiza un servicio existente. |
-| DELETE | `/api/services/:sid` | Elimina un servicio.             |
-
-La consulta de servicios admite los filtros `category` y `available`.
-
-Ejemplos:
+La consulta permite filtrar por `category` y `available`:
 
 ```http
 GET /api/services?category=Barberia
 GET /api/services?available=true
+GET /api/services?category=Barberia&available=true
 ```
 
-Para crear un servicio, se envía un body JSON sin el campo `id`, ya que lo genera el servidor.
-
-Ejemplo:
+Ejemplo de cuerpo JSON para crear un servicio (sin `id`):
 
 ```json
 {
@@ -160,21 +129,40 @@ Ejemplo:
 }
 ```
 
-## Recurso: Bookings
+Campos del servicio:
 
-Cada reserva contiene los siguientes campos:
+| Campo         | Tipo esperado | Descripción                                                   |
+| ------------- | ------------- | ------------------------------------------------------------- |
+| `id`          | number        | Identificador generado por el servidor. No se envía al crear. |
+| `name`        | string        | Nombre del servicio.                                          |
+| `description` | string        | Descripción del servicio.                                     |
+| `duration`    | number        | Duración del servicio.                                        |
+| `price`       | number        | Precio del servicio.                                          |
+| `category`    | string        | Categoría del servicio.                                       |
+| `available`   | boolean       | Indica si el servicio está disponible.                        |
 
-| Campo         | Descripción                                |
-| ------------- | ------------------------------------------ |
-| `id`          | Identificador generado por el servidor.    |
-| `clientName`  | Nombre del cliente.                        |
-| `clientEmail` | Correo electrónico del cliente.            |
-| `date`        | Fecha de la reserva.                       |
-| `time`        | Hora de la reserva.                        |
-| `status`      | Estado de la reserva.                      |
-| `services`    | Lista de servicios asociados a la reserva. |
+### Reservas (`/api/bookings`)
 
-Cada servicio asociado a una reserva utiliza la siguiente estructura:
+| Método | Endpoint                           | Descripción                       |
+| ------ | ---------------------------------- | --------------------------------- |
+| `POST` | `/api/bookings`                    | Crea una reserva.                 |
+| `GET`  | `/api/bookings/:bid`               | Obtiene una reserva por su ID.    |
+| `POST` | `/api/bookings/:bid/services/:sid` | Agrega un servicio a una reserva. |
+
+Ejemplo de cuerpo JSON para crear una reserva:
+
+```json
+{
+  "clientName": "Ana Pérez",
+  "clientEmail": "ana@example.com",
+  "date": "2026-11-15",
+  "time": "10:30"
+}
+```
+
+La API espera una fecha con formato `YYYY-MM-DD` y una hora con formato `HH:mm`. El `id` se genera en el servidor, el estado inicial es `success` y la lista `services` comienza vacía.
+
+Cada servicio asociado a una reserva utiliza esta estructura:
 
 ```json
 {
@@ -183,24 +171,14 @@ Cada servicio asociado a una reserva utiliza la siguiente estructura:
 }
 ```
 
-Si se agrega nuevamente un servicio que ya está asociado, se incrementa su cantidad.
-
-### Endpoints de reservas
-
-| Método | Endpoint                           | Descripción                       |
-| ------ | ---------------------------------- | --------------------------------- |
-| POST   | `/api/bookings`                    | Crea una reserva.                 |
-| GET    | `/api/bookings/:bid`               | Obtiene una reserva por ID.       |
-| POST   | `/api/bookings/:bid/services/:sid` | Agrega un servicio a una reserva. |
-
-Al asociar un servicio, el controller verifica que existan tanto la reserva como el servicio antes de solicitar la modificación al `BookingManager`.
+Al agregar nuevamente el mismo servicio, la regla prevista es incrementar `quantity` en la entrada existente en lugar de duplicar la entrada.
 
 ## Instalación y ejecución
 
 ### Requisitos
 
-- Node.js instalado.
-- npm instalado.
+- Node.js.
+- npm.
 
 ### 1. Clonar el repositorio
 
@@ -209,17 +187,15 @@ git clone https://github.com/PTaiel24/backend1-project-for-coderhouse.git
 cd backend1-project-for-coderhouse
 ```
 
-### 2. Instalar las dependencias
+### 2. Instalar dependencias
 
 ```bash
 npm install
 ```
 
-### 3. Configurar las variables de entorno
+### 3. Crear el archivo `.env`
 
-Crear un archivo `.env` en la raíz del proyecto tomando como referencia `.env.example`.
-
-Variables utilizadas:
+Crear un archivo `.env` en la raíz del proyecto a partir de `.env.example` y asignar valores locales, por ejemplo:
 
 ```env
 PORT=8080
@@ -227,7 +203,7 @@ NODE_ENV=development
 APP_NAME=Backend de Turnos y Reservas
 ```
 
-Los valores anteriores son un ejemplo de configuración local.
+`PORT` y `NODE_ENV` son requeridas por `env.config.js`. `APP_NAME` se utiliza en el mensaje de inicio del servidor.
 
 ### 4. Iniciar el servidor
 
@@ -243,41 +219,27 @@ Modo normal:
 npm start
 ```
 
-Si el servidor se inicia correctamente, estará disponible en el puerto configurado.
+Con la configuración anterior, la API queda disponible en `http://localhost:8080`.
 
-La ruta raíz `/` devuelve un mensaje de bienvenida.
+## Pruebas manuales
 
-## Pruebas con Postman
+Se puede usar Postman para probar los endpoints. Se recomienda comprobar:
 
-Los endpoints pueden probarse con Postman utilizando la dirección local correspondiente al puerto configurado.
-
-Se recomienda verificar:
-
-- Consulta de todos los servicios.
-- Búsqueda de un servicio por ID.
+- Listado y búsqueda de servicios.
 - Creación, actualización y eliminación de servicios.
+- Filtros `category` y `available`.
 - Creación y consulta de reservas.
-- Asociación de servicios a reservas.
-- Incremento de `quantity` al agregar un servicio repetido.
-- Respuestas de error para identificadores inexistentes.
-- Persistencia de los datos después de reiniciar el servidor.
+- Asociación de servicios a una reserva.
+- Incremento de `quantity` cuando se repite un servicio.
+- Respuestas para IDs inexistentes y cuerpos con datos inválidos.
+- Persistencia de cambios en los archivos JSON después de reiniciar el servidor.
 
-Las pruebas realizadas con Postman son manuales; el proyecto no incluye actualmente una suite automatizada de tests.
+El script `npm test` todavía está configurado como marcador de posición en `package.json`; no hay una suite de pruebas automatizadas configurada en esta versión.
 
-## Persistencia
+## Variables y archivos que no deben publicarse
 
-La API utiliza `fs/promises` para leer y escribir los archivos JSON de datos.
+El archivo `.gitignore` excluye `.env` y `node_modules`. El repositorio debe incluir `.env.example`, pero nunca credenciales reales ni valores privados. Los archivos JSON de `src/data/` forman parte de la persistencia de desarrollo de esta entrega.
 
-Esto permite conservar los registros entre reinicios del servidor. Los archivos JSON funcionan como mecanismo de persistencia para esta etapa del proyecto.
+## Alcance de esta etapa
 
-## Seguridad y archivos excluidos
-
-El archivo `.gitignore` excluye `node_modules` y `.env`.
-
-El repositorio debe incluir `.env.example` para documentar las variables necesarias, sin publicar credenciales ni configuraciones privadas.
-
-## Asistencia durante el desarrollo
-
-Durante el desarrollo de esta entrega se utilizó **ChatGPT como herramienta de apoyo** para comprender conceptos de JavaScript, analizar la separación de responsabilidades entre routers, controllers y managers, revisar posibles errores y orientar la organización de la documentación.
-
-La implementación, las modificaciones y las pruebas del proyecto se realizaron como parte del proceso de aprendizaje del estudiante.
+Esta versión mantiene FileSystem y JSON como persistencia. La separación entre Service, Repository y DAO prepara el proyecto para una futura migración a MongoDB Atlas con Mongoose, sin necesidad de cambiar las URLs públicas de los endpoints.

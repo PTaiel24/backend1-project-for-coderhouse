@@ -1,9 +1,12 @@
 {
   "name": "backend1-project-for-coderhouse",
   "version": "1.0.0",
-  "description": "",
+  "description": "API REST de servicios y reservas con arquitectura en capas",
   "keywords": [
-    "node"
+    "node",
+    "express",
+    "api-rest",
+    "coderhouse"
   ],
   "repository": {
     "type": "git",
