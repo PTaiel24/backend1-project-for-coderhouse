@@ -1,7 +1,6 @@
-import ServicesRepository from "../repositories/services.repository.js";
 import createError from "../utils/createError.js";
+import mongoose from "mongoose";
 
-const servicesRepository = new ServicesRepository();
 const SERVICE_FIELDS = [
   "name",
   "description",
@@ -25,8 +24,7 @@ const validateServiceData = (serviceData, { partial = false } = {}) => {
 
   const errors = [];
   const shouldValidate = (field) => {
-    !partial || Object.hasOwn(serviceData, field);
-    return shouldValidate;
+    return !partial || Object.hasOwn(serviceData, field);
   };
 
   if (
@@ -71,8 +69,8 @@ const validateServiceData = (serviceData, { partial = false } = {}) => {
 };
 
 class ServicesService {
-  constructor() {
-    this.servicesRepository = servicesRepository;
+  constructor(repository) {
+    this.repository = repository;
   }
 
   async getServices(filters = {}) {
@@ -82,11 +80,14 @@ class ServicesService {
       throw createError("El filtro tiene que ser 'true' o 'false'", 400);
     }
 
-    return this.servicesRepository.getAll(filters);
+    return this.repository.getAll(filters);
   }
 
   async getServiceById(id) {
-    const service = this.servicesRepository.getById(id);
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw createError("Id no valido", 400);
+    }
+    const service = await this.repository.getById(id);
     if (!service) {
       throw createError("Servicio no encontrado", 404);
     }
@@ -100,13 +101,26 @@ class ServicesService {
       SERVICE_FIELDS.map((field) => [field, serviceData[field]]),
     );
 
-    return this.servicesRepository.create(normalizedData);
+    return this.repository.create(normalizedData);
   }
 
   async updateService(id, updateData) {
+    if (
+      !updateData ||
+      typeof updateData !== "object" ||
+      Array.isArray(updateData) ||
+      Object.keys(updateData).length === 0
+    ) {
+      throw createError("Debe enviar al menos un campo para actualizar", 400);
+    }
+
     validateServiceData(updateData, { partial: true });
 
-    const updateService = await this.servicesRepository.update(id, updateData);
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw createError("Id no valido", 400);
+    }
+
+    const updateService = await this.repository.update(id, updateData);
 
     if (!updateService) {
       throw createError("Servicio no encontrado", 404);
@@ -116,7 +130,11 @@ class ServicesService {
   }
 
   async deleteService(id) {
-    const deleteService = await this.servicesRepository.delete(id);
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw createError("Id no valido", 400);
+    }
+
+    const deleteService = await this.repository.delete(id);
 
     if (!deleteService) {
       throw createError("Servicio no encontrado", 404);

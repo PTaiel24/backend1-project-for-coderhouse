@@ -1,9 +1,8 @@
-import BookingsService from "../services/bookings.service.js";
 import sendError from "../utils/sendError.js";
 
 class BookingController {
-  constructor() {
-    this.bookings = new BookingsService();
+  constructor(bookings) {
+    this.bookings = bookings;
 
     this.createBooking = this.createBooking.bind(this);
     this.getBookingById = this.getBookingById.bind(this);
@@ -25,7 +24,7 @@ class BookingController {
   async getBookingById(req, res) {
     try {
       const { bid } = req.params;
-      const booking = await this.bookings.getBookingById(Number(bid));
+      const booking = await this.bookings.getBookingById(bid);
       res.status(200).json({
         status: "success",
         payload: booking,
@@ -38,10 +37,7 @@ class BookingController {
   async addServiceToBooking(req, res) {
     try {
       const { bid, sid } = req.params;
-      const newBooking = await this.bookings.addServiceToBooking(
-        Number(bid),
-        Number(sid),
-      );
+      const newBooking = await this.bookings.addServiceToBooking(bid, sid);
       res.status(201).json({
         status: "success",
         payload: newBooking,

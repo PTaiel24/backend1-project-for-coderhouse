@@ -1,9 +1,8 @@
-import ServicesService from "../services/services.service.js";
 import sendError from "../utils/sendError.js";
 
 class ServicesController {
-  constructor() {
-    this.servicesService = new ServicesService();
+  constructor(services) {
+    this.service = services;
 
     this.getServices = this.getServices.bind(this);
     this.getServiceById = this.getServiceById.bind(this);
@@ -15,7 +14,7 @@ class ServicesController {
   async getServices(req, res) {
     try {
       const { category, available } = req.query;
-      const services = await this.servicesService.getServices({
+      const services = await this.service.getServices({
         category,
         available,
       });
@@ -31,7 +30,7 @@ class ServicesController {
   async getServiceById(req, res) {
     try {
       const { sid } = req.params;
-      const service = await this.servicesService.getServiceById(Number(sid));
+      const service = await this.service.getServiceById(sid);
       return res.status(200).json({
         status: "success",
         payload: service,
@@ -43,7 +42,7 @@ class ServicesController {
 
   async createService(req, res) {
     try {
-      const newService = await this.servicesService.createService(req.body);
+      const newService = await this.service.createService(req.body);
       return res.status(201).json({
         status: "success",
         payload: newService,
@@ -56,10 +55,7 @@ class ServicesController {
   async updateService(req, res) {
     try {
       const { sid } = req.params;
-      const updateService = await this.servicesService.updateService(
-        Number(sid),
-        req.body,
-      );
+      const updateService = await this.service.updateService(sid, req.body);
       res.status(200).json({
         status: "success",
         payload: updateService,
@@ -72,9 +68,7 @@ class ServicesController {
   async deleteService(req, res) {
     try {
       const { sid } = req.params;
-      const deleteService = await this.servicesService.deleteService(
-        Number(sid),
-      );
+      const deleteService = await this.service.deleteService(sid);
       res.status(200).json({
         status: "success",
         payload: deleteService,

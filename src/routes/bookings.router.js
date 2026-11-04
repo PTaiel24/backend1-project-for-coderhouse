@@ -1,7 +1,22 @@
 import { Router } from "express";
 import BookingController from "../controllers/bookings.controller.js";
+import BookingsService from "../services/bookings.service.js";
+import BookingsRepository from "../repositories/bookings.repository.js";
+import BookingsMongoDAO from "../dao/bookings.mongo.dao.js";
 
-const bookingController = new BookingController();
+import ServicesService from "../services/services.service.js";
+import ServicesRepository from "../repositories/services.repository.js";
+import ServicesMongoDAO from "../dao/services.mongo.dao.js";
+
+const servicesDao = new ServicesMongoDAO();
+const servicesRepository = new ServicesRepository(servicesDao);
+const services = new ServicesService(servicesRepository);
+
+const bookingsDao = new BookingsMongoDAO();
+const bookingsRepository = new BookingsRepository(bookingsDao);
+const bookings = new BookingsService(bookingsRepository, services);
+const bookingController = new BookingController(bookings);
+
 const router = Router();
 
 router.post("/", bookingController.createBooking);

@@ -1,10 +1,6 @@
-import BookingsDAO from "../dao/bookings.dao.js";
-
-const bookingsDao = new BookingsDAO();
-
 class BookingsRepository {
-  constructor() {
-    this.dao = bookingsDao;
+  constructor(dao) {
+    this.dao = dao;
   }
 
   async create(bookingData) {

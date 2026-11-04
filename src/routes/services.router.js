@@ -1,17 +1,26 @@
 import { Router } from "express";
 import ServicesController from "../controllers/services.controller.js";
+import ServicesService from "../services/services.service.js";
+import ServicesRepository from "../repositories/services.repository.js";
+import ServicesMongoDAO from "../dao/services.mongo.dao.js";
 
-const servicesController = new ServicesController();
+const dao = new ServicesMongoDAO();
+const repository = new ServicesRepository(dao);
+const services = new ServicesService(repository);
+const servicesController = new ServicesController(services);
+
 const router = Router();
 
-router.get("/", servicesController.getServices);
+router.get("/", (req, res) => servicesController.getServices(req, res));
 
-router.get("/:sid", servicesController.getServiceById);
+router.get("/:sid", (req, res) => servicesController.getServiceById(req, res));
 
-router.post("/", servicesController.createService);
+router.post("/", (req, res) => servicesController.createService(req, res));
 
-router.put("/:sid", servicesController.updateService);
+router.put("/:sid", (req, res) => servicesController.updateService(req, res));
 
-router.delete("/:sid", servicesController.deleteService);
+router.delete("/:sid", (req, res) =>
+  servicesController.deleteService(req, res),
+);
 
 export default router;

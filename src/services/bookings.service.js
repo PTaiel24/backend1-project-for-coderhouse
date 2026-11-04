@@ -1,14 +1,10 @@
-import BookingsRepository from "../repositories/bookings.repository.js";
-import ServicesService from "../services/services.service.js";
 import createError from "../utils/createError.js";
-
-const bookingsRepository = new BookingsRepository();
-const servicesService = new ServicesService();
+import mongoose from "mongoose";
 
 class BookingsService {
-  constructor() {
-    this.repository = bookingsRepository;
-    this.services = servicesService;
+  constructor(repository, services) {
+    this.repository = repository;
+    this.services = services;
   }
 
   async createBooking(bookingData) {
@@ -72,6 +68,10 @@ class BookingsService {
   }
 
   async getBookingById(id) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw createError("Id no valido", 400);
+    }
+
     const booking = await this.repository.getById(id);
 
     if (!booking) {
@@ -81,6 +81,13 @@ class BookingsService {
   }
 
   async addServiceToBooking(bid, sid) {
+    if (!mongoose.Types.ObjectId.isValid(bid)) {
+      throw createError("Id de reserva no valido", 400);
+    }
+    if (!mongoose.Types.ObjectId.isValid(sid)) {
+      throw createError("Id de servicio no valido", 400);
+    }
+
     const booking = await this.repository.getById(bid);
     const service = await this.services.getServiceById(sid);
 
@@ -94,7 +101,9 @@ class BookingsService {
     const services = Array.isArray(booking.services)
       ? [...booking.services]
       : [];
-    const existingService = services.find((item) => item.service === sid);
+    const existingService = services.find(
+      (item) => String(item.service) === String(sid),
+    );
 
     if (existingService) {
       existingService.quantity += 1;
@@ -103,7 +112,6 @@ class BookingsService {
     }
 
     return this.repository.update(bid, {
-      ...booking,
       services,
     });
   }
