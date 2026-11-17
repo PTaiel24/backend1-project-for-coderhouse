@@ -19,6 +19,12 @@
   {{/each}}
 </section>
 
+<nav class="pagination">
+  {{#if prevLink}}<a href="{{prevLink}}">← Anterior</a>{{/if}}
+  <span>Página {{pagination.page}} de {{pagination.totalPages}} · {{pagination.total}} servicios</span>
+  {{#if nextLink}}<a href="{{nextLink}}">Siguiente →</a>{{/if}}
+</nav>
+
 <a href="/views/create-service">
   <button>Crear servicio</button>
 </a>

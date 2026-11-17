@@ -40,6 +40,8 @@ const validBooking = {
   time: "14:30",
 };
 
+// El formato de los datos (fechas, horas, emails, campos obligatorios) se
+// valida con Zod en test/validations.test.js. Acá se prueba la lógica de negocio.
 describe("BookingsService", () => {
   let service;
   let existingServiceId;
@@ -69,21 +71,6 @@ describe("BookingsService", () => {
     assert.deepEqual(created.services, []);
   });
 
-  it("rechaza reservas con datos inválidos (400)", async () => {
-    const invalidBodies = [
-      null,
-      [],
-      {},
-      { ...validBooking, date: "2026-13-40" },
-      { ...validBooking, date: ["2026-12-15"] },
-      { ...validBooking, time: "25:00" },
-    ];
-
-    for (const body of invalidBodies) {
-      await assert.rejects(service.createBooking(body), { statusCode: 400 });
-    }
-  });
-
   it("agrega un servicio y suma la cantidad si se repite", async () => {
     const booking = await service.createBooking(validBooking);
 
@@ -109,36 +96,19 @@ describe("BookingsService", () => {
     });
   });
 
-  it("PUT: actualiza solo los campos permitidos", async () => {
+  it("PUT: actualiza los campos recibidos", async () => {
     const booking = await service.createBooking(validBooking);
 
     const updated = await service.updateBooking(booking._id, {
       time: "16:00",
       status: "confirmed",
-      services: [],
     });
 
     assert.equal(updated.time, "16:00");
     assert.equal(updated.status, "confirmed");
   });
 
-  it("PUT: valida el cuerpo, el id y la existencia", async () => {
-    const booking = await service.createBooking(validBooking);
-
-    await assert.rejects(service.updateBooking(booking._id, {}), {
-      statusCode: 400,
-    });
-    await assert.rejects(service.updateBooking(booking._id, { services: [] }), {
-      statusCode: 400,
-    });
-    await assert.rejects(
-      service.updateBooking(booking._id, { date: "2026-02-31" }),
-      { statusCode: 400 },
-    );
-    await assert.rejects(
-      service.updateBooking(booking._id, { clientName: "  " }),
-      { statusCode: 400 },
-    );
+  it("PUT: devuelve 400 con id inválido y 404 si la reserva no existe", async () => {
     await assert.rejects(service.updateBooking("abc", { time: "10:00" }), {
       statusCode: 400,
     });

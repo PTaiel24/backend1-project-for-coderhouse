@@ -1,4 +1,5 @@
 import sendViewError from "../utils/sendViewError.js";
+import buildPageLink from "../utils/buildPageLink.js";
 
 class ViewsController {
   constructor(services, bookings, messages) {
@@ -15,14 +16,14 @@ class ViewsController {
   }
 
   async getServices(req, res) {
-    const { category, available } = req.query;
     try {
-      const services = await this.services.getServices({
-        category,
-        available,
-      });
+      const query = req.validatedQuery;
+      const { services, pagination } = await this.services.getServices(query);
       return res.status(200).render("services", {
         services,
+        pagination,
+        prevLink: buildPageLink("/views/services", query, pagination.prevPage),
+        nextLink: buildPageLink("/views/services", query, pagination.nextPage),
       });
     } catch (error) {
       sendViewError(error, res);

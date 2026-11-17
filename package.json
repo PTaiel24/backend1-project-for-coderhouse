@@ -1,7 +1,7 @@
 {
   "name": "backend1-project-for-coderhouse",
   "version": "1.0.0",
-  "description": "API REST de servicios y reservas con arquitectura en capas",
+  "description": "API REST de servicios, reservas y mensajes con arquitectura en capas, vistas Handlebars y Socket.io",
   "keywords": [
     "node",
     "express",
@@ -19,13 +19,14 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test"
   },
   "dependencies": {
     "dotenv": "^18.0.3",
     "express": "^5.2.1",
     "express-handlebars": "^9.0.5",
     "mongoose": "^9.11.4",
-    "socket.io": "^4.8.4"
+    "socket.io": "^4.8.4",
+    "zod": "^4.0.0"
   }
 }

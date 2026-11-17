@@ -12,6 +12,10 @@ import MessagesService from "../services/messages.service.js";
 import MessagesRepository from "../repositories/messages.repository.js";
 import MessagesMongoDAO from "../dao/messages.mongo.dao.js";
 
+import { validateQuery } from "../middlewares/validate.middleware.js";
+import { serviceQuerySchema } from "../validations/service.validation.js";
+import sendViewError from "../utils/sendViewError.js";
+
 const dao = new ServicesMongoDAO();
 const repository = new ServicesRepository(dao);
 const services = new ServicesService(repository);
@@ -28,7 +32,9 @@ const controller = new ViewsController(services, bookings, messages);
 
 const router = Router();
 
-router.get("/services", async (req, res) => controller.getServices(req, res));
+router.get("/services", validateQuery(serviceQuerySchema), async (req, res) =>
+  controller.getServices(req, res),
+);
 router.get("/services/:id", async (req, res) =>
   controller.getServiceById(req, res),
 );
@@ -42,5 +48,8 @@ router.get("/edit-service/:id", async (req, res) =>
 router.get("/bookings", async (req, res) => controller.getBookings(req, res));
 
 router.get("/messages", async (req, res) => controller.getMessages(req, res));
+
+// Los errores de validación de las vistas se muestran en la página de error
+router.use((error, req, res, next) => sendViewError(error, res));
 
 export default router;

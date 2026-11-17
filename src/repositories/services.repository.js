@@ -3,8 +3,8 @@ class ServicesRepository {
     this.dao = dao;
   }
 
-  async getAll({ category, available } = {}) {
-    return this.dao.getAll({ category, available });
+  async getAll(options = {}) {
+    return this.dao.getAll(options);
   }
 
   async getById(id) {

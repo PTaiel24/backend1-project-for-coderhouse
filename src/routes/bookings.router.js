@@ -8,6 +8,16 @@ import ServicesService from "../services/services.service.js";
 import ServicesRepository from "../repositories/services.repository.js";
 import ServicesMongoDAO from "../dao/services.mongo.dao.js";
 
+import {
+  validateBody,
+  validateParams,
+} from "../middlewares/validate.middleware.js";
+import {
+  createBookingSchema,
+  updateBookingSchema,
+  addServiceToBookingParamsSchema,
+} from "../validations/booking.validation.js";
+
 const servicesDao = new ServicesMongoDAO();
 const servicesRepository = new ServicesRepository(servicesDao);
 const services = new ServicesService(servicesRepository);
@@ -21,14 +31,26 @@ const router = Router();
 
 router.get("/", bookingController.getBookings);
 
-router.post("/", bookingController.createBooking);
+router.post(
+  "/",
+  validateBody(createBookingSchema),
+  bookingController.createBooking,
+);
 
 router.get("/:bid", bookingController.getBookingById);
 
-router.put("/:bid", bookingController.updateBooking);
+router.put(
+  "/:bid",
+  validateBody(updateBookingSchema),
+  bookingController.updateBooking,
+);
 
 router.delete("/:bid", bookingController.deleteBooking);
 
-router.post("/:bid/services/:sid", bookingController.addServiceToBooking);
+router.post(
+  "/:bid/services/:sid",
+  validateParams(addServiceToBookingParamsSchema),
+  bookingController.addServiceToBooking,
+);
 
 export default router;

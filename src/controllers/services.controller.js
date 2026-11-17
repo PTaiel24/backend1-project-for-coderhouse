@@ -1,5 +1,6 @@
 import sendError from "../utils/sendError.js";
 import emitEvent from "../utils/emitEvent.js";
+import buildPageLink from "../utils/buildPageLink.js";
 
 class ServicesController {
   constructor(services) {
@@ -14,14 +15,14 @@ class ServicesController {
 
   async getServices(req, res) {
     try {
-      const { category, available } = req.query;
-      const services = await this.services.getServices({
-        category,
-        available,
-      });
+      const query = req.validatedQuery;
+      const { services, pagination } = await this.services.getServices(query);
       return res.status(200).json({
         status: "success",
         payload: services,
+        ...pagination,
+        prevLink: buildPageLink("/api/services", query, pagination.prevPage),
+        nextLink: buildPageLink("/api/services", query, pagination.nextPage),
       });
     } catch (error) {
       sendError(error, res);
