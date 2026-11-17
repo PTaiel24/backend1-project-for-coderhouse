@@ -1,0 +1,58 @@
+<p><a href="/views/services/{{_id}}">← Volver al servicio</a></p>
+
+<h2>Modificar servicio</h2>
+
+<form id="form">
+  <input type="text" name="name" placeholder="Nombre del servicio" value="{{name}}" />
+  <textarea name="description" placeholder="Descripcion">{{description}}</textarea>
+  <input type="number" name="duration" placeholder="Duracion" value="{{duration}}" min="1" />
+  <input type="number" name="price" placeholder="Precio" value="{{price}}" min="0" />
+  <input type="text" name="category" placeholder="Categoria" value="{{category}}" />
+  <label for="available">Disponibilidad: </label>
+  <select name="available" id="available">
+    <option value="true" {{#if available}}selected{{/if}}>
+      Disponible
+    </option>
+    <option value="false" {{#unless available}}selected{{/unless}}>
+      No disponible
+    </option>
+  </select>
+  <button type="submit">Guardar cambios</button>
+</form>
+
+<script>
+  const form = document.getElementById('form')
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault()
+
+    const formData = new FormData(form)
+    const data = Object.fromEntries(formData.entries())
+
+    data.name = data.name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+    data.description = data.description.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+    data.category = data.category.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+    data.duration = Number(data.duration)
+    data.price = Number(data.price)
+    data.available = data.available === 'true'
+
+    try {
+      const response = await fetch('/api/services/{{_id}}', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        alert('Servicio modificado exitosamente')
+        window.location.href = '/views/services/{{_id}}'
+      } else {
+        alert(result.message || 'Error al modificar el servicio')
+      }
+    } catch (error) {
+      alert(error.message)
+    }
+  })
+</script>

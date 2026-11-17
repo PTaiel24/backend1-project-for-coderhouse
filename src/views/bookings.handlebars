@@ -1,0 +1,31 @@
+<h1>Reservas</h1>
+
+<p id="bookingsEmpty" class="empty-state" {{#if bookings.length}}hidden{{/if}}>Sin reservas...</p>
+
+<section id="bookingsList">
+  {{#each bookings}}
+  <article id="{{_id}}" class="booking-card">
+    <h2>Cliente: {{clientName}}</h2>
+    <p>Email: {{clientEmail}}</p>
+    <p>Fecha: {{date}}</p>
+    <p>Hora: {{time}}</p>
+    <p>Estado: {{status}}</p>
+    <table>
+      <tr>
+        <th>Servicio</th>
+        <th>Cantidad</th>
+      </tr>
+      {{#each services}}
+      <tr>
+        <td>{{#if service}}{{service.name}}{{else}}Servicio eliminado{{/if}}</td>
+        <td>{{quantity}}</td>
+      </tr>
+      {{else}}
+      <tr>
+        <td colspan="2">Sin servicios agregados</td>
+      </tr>
+      {{/each}}
+    </table>
+  </article>
+  {{/each}}
+</section>

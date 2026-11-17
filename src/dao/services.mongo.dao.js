@@ -11,11 +11,11 @@ class ServicesMongoDAO {
       filters.available = available === "true";
     }
 
-    return ServiceModel.find(filters);
+    return ServiceModel.find(filters).lean();
   }
 
   async getById(id) {
-    return ServiceModel.findById(id);
+    return ServiceModel.findById(id).lean();
   }
 
   async create(serviceData) {
@@ -24,13 +24,13 @@ class ServicesMongoDAO {
 
   async update(id, updateData) {
     return ServiceModel.findByIdAndUpdate(id, updateData, {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
-    });
+    }).lean();
   }
 
   async delete(id) {
-    return ServiceModel.findByIdAndDelete(id);
+    return ServiceModel.findByIdAndDelete(id).lean();
   }
 }
 

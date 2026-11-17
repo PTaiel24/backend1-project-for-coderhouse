@@ -1,0 +1,24 @@
+<h1>Servicios disponibles</h1>
+
+<p id="servicesEmpty" class="empty-state" {{#if services.length}}hidden{{/if}}>Todavía no hay servicios cargados.</p>
+
+<section id="servicesList">
+  {{#each services}}
+  <article id="{{_id}}" class="service-card">
+    <h2>{{name}}</h2>
+
+    <p>{{description}}</p>
+    <p>Duración: {{duration}} minutos</p>
+    <p>Precio: ${{price}}</p>
+    <p>Categoría: {{category}}</p>
+
+    <p class="{{#if available}}available{{else}}unavailable{{/if}}">Disponibilidad: {{#if available}}Disponible{{else}}No disponible{{/if}}</p>
+
+    <a href="/views/services/{{_id}}">Ver detalles</a>
+  </article>
+  {{/each}}
+</section>
+
+<a href="/views/create-service">
+  <button>Crear servicio</button>
+</a>

@@ -19,9 +19,15 @@ const bookingController = new BookingController(bookings);
 
 const router = Router();
 
+router.get("/", bookingController.getBookings);
+
 router.post("/", bookingController.createBooking);
 
 router.get("/:bid", bookingController.getBookingById);
+
+router.put("/:bid", bookingController.updateBooking);
+
+router.delete("/:bid", bookingController.deleteBooking);
 
 router.post("/:bid/services/:sid", bookingController.addServiceToBooking);
 

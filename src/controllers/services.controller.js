@@ -1,8 +1,9 @@
 import sendError from "../utils/sendError.js";
+import emitEvent from "../utils/emitEvent.js";
 
 class ServicesController {
   constructor(services) {
-    this.service = services;
+    this.services = services;
 
     this.getServices = this.getServices.bind(this);
     this.getServiceById = this.getServiceById.bind(this);
@@ -14,7 +15,7 @@ class ServicesController {
   async getServices(req, res) {
     try {
       const { category, available } = req.query;
-      const services = await this.service.getServices({
+      const services = await this.services.getServices({
         category,
         available,
       });
@@ -30,7 +31,7 @@ class ServicesController {
   async getServiceById(req, res) {
     try {
       const { sid } = req.params;
-      const service = await this.service.getServiceById(sid);
+      const service = await this.services.getServiceById(sid);
       return res.status(200).json({
         status: "success",
         payload: service,
@@ -42,7 +43,10 @@ class ServicesController {
 
   async createService(req, res) {
     try {
-      const newService = await this.service.createService(req.body);
+      const newService = await this.services.createService(req.body);
+
+      emitEvent(req, "serviceCreated", newService);
+
       return res.status(201).json({
         status: "success",
         payload: newService,
@@ -55,7 +59,10 @@ class ServicesController {
   async updateService(req, res) {
     try {
       const { sid } = req.params;
-      const updateService = await this.service.updateService(sid, req.body);
+      const updateService = await this.services.updateService(sid, req.body);
+
+      emitEvent(req, "serviceUpdated", updateService);
+
       res.status(200).json({
         status: "success",
         payload: updateService,
@@ -68,7 +75,10 @@ class ServicesController {
   async deleteService(req, res) {
     try {
       const { sid } = req.params;
-      const deleteService = await this.service.deleteService(sid);
+      const deleteService = await this.services.deleteService(sid);
+
+      emitEvent(req, "serviceDeleted", sid);
+
       res.status(200).json({
         status: "success",
         payload: deleteService,

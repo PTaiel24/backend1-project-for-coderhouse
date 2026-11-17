@@ -1,0 +1,67 @@
+<p><a href="/views/services">← Volver al listado</a></p>
+
+<article id="service-detail" data-service-id="{{_id}}">
+  <h1 id="service-name">{{name}}</h1>
+
+  <p>
+    <strong>Descripción:</strong>
+    <span id="service-description">{{description}}</span>
+  </p>
+
+  <p>
+    <strong>Duración:</strong>
+    <span id="service-duration">{{duration}}</span>
+  </p>
+
+  <p>
+    <strong>Precio:</strong>
+    <span id="service-price">{{price}}</span>
+  </p>
+
+  <p>
+    <strong>Categoría:</strong>
+    <span id="service-category">{{category}}</span>
+  </p>
+
+  <p>
+    <strong>Disponibilidad:</strong>
+    <span id="service-availability">
+      {{#if available}}
+      Disponible
+      {{else}}
+      No disponible
+      {{/if}}
+    </span>
+  </p>
+
+  <a href="/views/edit-service/{{_id}}">
+    <button>Modificar servicio</button>
+  </a>
+  <form id="form" action="/api/services/{{_id}}" method="POST">
+    <button type="submit">Eliminar servicio</button>
+  </form>
+</article>
+
+<script>
+  const form = document.getElementById('form')
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault()
+
+    try {
+      const response = await fetch('/api/services/{{_id}}', {
+        method: 'DELETE'
+      })
+      const result = await response.json()
+
+      if (response.ok) {
+        alert('Servicio eliminado exitosamente')
+        window.location.href = '/views/services'
+      } else {
+        alert(result.message || 'Error al eliminar el servicio')
+      }
+    } catch (error) {
+      alert(error.message)
+    }
+  })
+</script>
